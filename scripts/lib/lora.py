@@ -24,7 +24,7 @@ class LoRaController(object):
     Args:
       data: bytes.
     """
-    self.sock_.setblocking(True)
+    self.sock_.setblocking(False)
     self.sock_.send(data)
 
   def recv(self):
