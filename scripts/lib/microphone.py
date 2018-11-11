@@ -3,8 +3,8 @@ from machine import Timer
 
 class Microphone(object):
 
-  HZ = 8000
-  FRAME_SIZE = 100  # 100 bytes in a data frame
+  HZ = 2000
+  FRAME_SIZE = 200  # 200 bytes in a data frame
 
   def __init__(self, apin, callback):
     """Constructor.
@@ -35,8 +35,8 @@ class Microphone(object):
   def flush_frame(self):
     if self.stream_:
       data = bytes([x for x in self.stream_])
-      self.callback_(data)
       self.stream_ = []
+      self.callback_(data)
 
   def start(self):
     print("Start recording ...")

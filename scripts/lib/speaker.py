@@ -3,7 +3,7 @@ from machine import Timer
 
 class Speaker(object):
 
-  HZ = 8000
+  HZ = 2000
 
   def __init__(self, dac):
     """Constructor.
