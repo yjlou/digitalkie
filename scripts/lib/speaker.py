@@ -14,7 +14,7 @@ class Speaker(object):
     self.dac_ = dac
     self.stream_ = []
 
-    us = 1000000 / self.HZ
+    us = int(1000000 / self.HZ)
     self.timer_ = Timer.Alarm(self.hz, us=us, periodic=True)
 
   def enque(self, data):
@@ -27,7 +27,7 @@ class Speaker(object):
     floats = [x / 255.0 for x in data]
     self.stream_.extend(floats)
 
-  def hz(self):
+  def hz(self, alarm):
     if self.stream_:
       data = self.stream_.pop(0)
       self.dac_.write(data)

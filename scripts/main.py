@@ -13,7 +13,7 @@ def frame_received(data):
 
 lora_ctl = lora.LoRaController()
 spk = speaker.Speaker(DAC('P22'))
-adc = machine.ADC() 
+adc = ADC() 
 apin = adc.channel(pin='P13')
 uphone = microphone.Microphone(apin, frame_received)
 tlk_btn = talk_button.TalkButton(uphone)

@@ -14,7 +14,7 @@ class TalkButton(object):
       microphone: an microphone.Microphone object
     """
     self.pin_ = Pin(self.PIN_STR, mode=Pin.IN, pull=Pin.PULL_DOWN)
-    self.pin_.callback(IRQ_RISING, self.pressed)
+    self.pin_.callback(Pin.IRQ_RISING, self.pressed)
     self.pin_.callback(Pin.IRQ_FALLING, self.released)
 
     pycom.heartbeat(False)  # RGB LED
@@ -22,9 +22,11 @@ class TalkButton(object):
     self.microphone_ = microphone
 
   def pressed(self):
+    print("Pressed ...")
     pycom.rgbled(0x7f0000)  # red
     self.microphone_.start()
 
   def released(self):
+    print("Released ...")
     pycom.rgbled(0x000000)  # off
     self.microphone_.stop()

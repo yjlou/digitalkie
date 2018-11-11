@@ -19,10 +19,10 @@ class Microphone(object):
     self.stream_ = []
     self.recording_ = False
 
-    us = 1000000 / self.HZ
+    us = int(1000000 / self.HZ)
     self.timer_ = Timer.Alarm(self.hz, us=us, periodic=True)
 
-  def hz(self):
+  def hz(self, alarm):
     if not self.recording_:
       return
 

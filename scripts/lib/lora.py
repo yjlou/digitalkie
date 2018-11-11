@@ -17,25 +17,24 @@ class LoRaController(object):
 
     # create a raw LoRa socket
     self.sock_ = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
+
+  def send(self, data):
+    """Send out data.
+
+    Args:
+      data: bytes.
+    """
+    self.sock_.setblocking(True)
+    self.sock_.send(data)
+
+  def recv(self):
+    """Receive data.
+
+    This is non-blocking call.
+
+    Returns:
+    bytes if a data is received.
+    0 byte of data will be returned if no data is received.
+    """
     self.sock_.setblocking(False)
-
-    def send(self,data):
-      """Send out data.
-
-      Args:
-        data: bytes.
-      """
-      s.setblocking(True)
-      s.send(data)
-
-    def recv(self):
-      """Receive data.
-
-      This is non-blocking call.
-
-      Returns:
-        bytes if a data is received.
-        0 byte of data will be returned if no data is received.
-      """
-      s.setblocking(False)
-      return s.recv(self.MTU)
+    return self.sock_.recv(self.MTU)
