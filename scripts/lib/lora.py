@@ -5,7 +5,7 @@ import time
 
 class LoRaController(object):
 
-  MTU = 80  # TBD
+  MRU = 400  # TBD
 
   def __init__(self):
     """Constructor."""
@@ -37,4 +37,4 @@ class LoRaController(object):
     0 byte of data will be returned if no data is received.
     """
     self.sock_.setblocking(False)
-    return self.sock_.recv(self.MTU)
+    return self.sock_.recv(self.MRU)
