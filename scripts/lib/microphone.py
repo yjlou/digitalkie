@@ -26,14 +26,15 @@ class Microphone(object):
     if not self.recording_:
       return
 
-    self.stream_.append(self.apin_())
+    # ADC value is 12-bit.
+    self.stream_.append(self.apin_() >> 4)
 
     if len(self.stream_) >= self.FRAME_SIZE:
       self.flush_frame()
 
   def flush_frame(self):
     if self.stream_:
-      data = bytes([x * 255.0 for x in self.stream_])
+      data = bytes([x for x in self.stream_])
       self.callback_(data)
       self.stream_ = []
 
