@@ -4,7 +4,7 @@ from machine import Timer
 class Microphone(object):
 
   HZ = 2000
-  FRAME_SIZE = 200  # 200 bytes in a data frame
+  FRAME_SIZE = 200  # MTU is 255 bytes.
 
   def __init__(self, apin, callback):
     """Constructor.
