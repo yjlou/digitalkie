@@ -85,15 +85,16 @@ def audio_loopback():
 
 
 def main():
-  def audio_buffer(data):
-      print('.')
-      lora_ctl.send(data)
+  pkt_tx_queue = []
+
+  def audio_frame_ready(data):
+      pkt_tx_queue.append(data)
 
   lora_ctl = lora.LoRaController()
   spk = speaker.Speaker(DAC('P22'))
   adc = ADC()
   apin = adc.channel(pin='P13')
-  uphone = microphone.Microphone(apin, audio_buffer)
+  uphone = microphone.Microphone(apin, audio_frame_ready)
   tlk_btn = talk_button.TalkButton(uphone)
 
   print('Started ...')
@@ -101,12 +102,22 @@ def main():
 
   while True:
     Timer.sleep_us(1000)
+
+    # Handle the RX packets
+    # TODO: refactor to use callback mechanism.
     while True:
       data = lora_ctl.recv()
       if data:
         spk.enque(data)
-    else:
+      else:
         break
+
+    # Handle the TX queue
+    # TODO: refactor to use Python synchronized Queue.
+    while pkt_tx_queue:
+      data = pkt_tx_queue.pop(0)
+      print('.')
+      lora_ctl.send(data)
 
 # lora_echo()
 # audio_loopback()
