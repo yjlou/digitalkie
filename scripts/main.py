@@ -25,7 +25,11 @@ def lora_echo():
   print('LoRa Echo ...')
   flash(0x7f007f)  # Purple
 
+  WAIT_RSP_MS = 200  # Timeout before receive the response
+  RESPONSE_MODE_MS = 15000  # Wait until next trial
+
   while True:
+    print('===========================================')
     # Send 10 packets
     flash(0x000010)  # dark blue
     TOTAL_SEND = 10
@@ -37,14 +41,17 @@ def lora_echo():
       # Collect response in 200ms
       timer = Timer.Chrono()
       timer.start()
-      while timer.read_ms() < 200:
+      while timer.read_ms() < WAIT_RSP_MS:
         recv = lora_ctl.recv()
         if recv and recv.startswith('ECHO_RSP'):
+          print('[{}] Recv RSP in {} ms'.format(i, timer.read_ms()))
           collected.append(recv)
+          break
 
     percent = len(collected) / TOTAL_SEND
     print('Send: {}  Recv: {}  Percent: {:3d}%'.format(
           TOTAL_SEND, len(collected), int(percent * 100)))
+    print('-------------------------------------------')
     if percent >= 0.7:
       flash(0x007f00)  # green
     elif percent >= 0.4:
@@ -56,7 +63,7 @@ def lora_echo():
     while timer.read_ms() < 10000:
       recv = lora_ctl.recv()
       if recv and recv.startswith('ECHO_REQ'):
-        print(recv)
+        print('Got echo request: {}'.format(recv))
         send_back = bytes('ECHO_RSP', 'utf-8') + recv[8:]
         lora_ctl.send(send_back)
 
