@@ -18,9 +18,11 @@ class Microphone(object):
     self.callback_ = callback
     self.stream_ = []
     self.recording_ = False
+    self.sampled_ = 0  # For statistic
 
     us = int(1000000 / self.HZ)
     self.timer_ = Timer.Alarm(self.hz, us=us, periodic=True)
+    self.second_ = Timer.Alarm(self.second, s=1, periodic=True)
 
   def hz(self, alarm):
     if not self.recording_:
@@ -28,9 +30,16 @@ class Microphone(object):
 
     # ADC value is 12-bit.
     self.stream_.append(self.apin_() >> 4)
+    self.sampled_ += 1
 
     if len(self.stream_) >= self.FRAME_SIZE:
       self.flush_frame()
+
+  def second(self, alarm):
+    if not self.recording_:
+      return
+    print('Sampled: {} data.'.format(self.sampled_))
+    self.sampled_ = 0
 
   def flush_frame(self):
     if self.stream_:
@@ -45,4 +54,5 @@ class Microphone(object):
   def stop(self):
     print("Stop recording ...")
     self.recording_ = False
+    self.sampled_ = 0
     self.flush_frame()
