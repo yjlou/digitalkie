@@ -56,7 +56,7 @@ def lora_echo():
     while timer.read_ms() < 5000:
       recv = lora_ctl.recv()
       if recv and recv.startswith('ECHO_REQ'):
-        send_back = 'ECHO_RSP' + recv[8:]
+        send_back = bytes('ECHO_RSP', 'utf-8') + recv[8:]
         lora_ctl.send(send_back)
 
 def audio_loopback():
