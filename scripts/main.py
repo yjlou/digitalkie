@@ -68,21 +68,25 @@ def lora_echo():
         lora_ctl.send(send_back)
 
 def audio_loopback():
-  def audio_buffer(data):
-      spk.enque(data)
+  def handle_audio(data):
+    spk.enque(data)
 
-  spk = speaker.Speaker(DAC('P22'))
+  int_mode = False
+  spk = speaker.Speaker(DAC('P22'), int_mode=int_mode, debug=False)
   adc = ADC()
-  apin = adc.channel(pin='P13')
-  uphone = microphone.Microphone(apin, audio_buffer)
+  apin = adc.channel(pin='P13', attn=ADC.ATTN_11DB)
+  uphone = microphone.Microphone(apin, handle_audio, int_mode=int_mode)
   tlk_btn = talk_button.TalkButton(uphone)
 
   print('Audio playpack ...')
   flash(0x000010)  # Dark blue
 
   while True:
-    Timer.sleep_us(1000000)
-
+    if int_mode:
+      Timer.sleep_us(1000000)
+    else:
+      uphone.loop()
+      spk.loop()
 
 def main():
   pkt_tx_queue = []
@@ -93,7 +97,7 @@ def main():
   lora_ctl = lora.LoRaController()
   spk = speaker.Speaker(DAC('P22'))
   adc = ADC()
-  apin = adc.channel(pin='P13')
+  apin = adc.channel(pin='P13', attn=ADC.ATTN_11DB)
   uphone = microphone.Microphone(apin, audio_frame_ready)
   tlk_btn = talk_button.TalkButton(uphone)
 
@@ -119,6 +123,6 @@ def main():
       print('.')
       lora_ctl.send(data)
 
-# lora_echo()
+lora_echo()
 # audio_loopback()
-main()
+# main()
