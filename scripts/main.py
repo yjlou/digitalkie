@@ -1,12 +1,35 @@
-import pycom
 from machine import ADC
-from machine import DAC
 from machine import Timer
+from machine import DAC
+import math
+import pycom
+import uos
 
 import lora
 import microphone
 import speaker
 import talk_button
+
+def randint(a, b):
+  """Returns a random integer bet a and b (not included).
+
+  Args:
+    a: starting integer
+    b: ending integer (not included)
+
+  Returns:
+    int
+  """
+  assert(b > a)
+  r = (b - a)  # range
+  bits = math.ceil(math.log(r) / math.log(2)) + 7 + 8  # 8 more bits to make posibility more even.
+  num_bytes = int(bits / 8)
+  random_bytes = uos.urandom(num_bytes)
+  s = 0  # sum
+  for b in random_bytes:
+    s = s * 256 + b
+  result = (s % r) + a
+  return result
 
 def flash(color, delay_us=100000):
   """Generate a 100ms of flash on RGB LED.
@@ -25,42 +48,51 @@ def lora_echo():
   print('LoRa Echo ...')
   flash(0x7f007f)  # Purple
 
+  RECV_WINDOW = 20   # Used to count how many packets were received in the past.
   WAIT_RSP_MS = 200  # Timeout before receive the response
-  RESPONSE_MODE_MS = 15000  # Wait until next trial
+  NEXT_TRY_MIN = 1000  # Min timeout for next try
+  NEXT_TRY_MAX = 2000  # Min timeout for next try
 
+  statistics = [0] * RECV_WINDOW
+
+  cnt = 0
   while True:
-    print('===========================================')
+    print('=============================================')
     # Send 10 packets
-    flash(0x000010)  # dark blue
-    TOTAL_SEND = 10
-    collected = []
-    for i in range(TOTAL_SEND):
-      data = 'ECHO_REQ{}'.format(i)
-      lora_ctl.send(data)
+    # flash(0x000010)  # dark blue
 
-      # Collect response in 200ms
-      timer = Timer.Chrono()
-      timer.start()
-      while timer.read_ms() < WAIT_RSP_MS:
-        recv = lora_ctl.recv()
-        if recv and recv.startswith('ECHO_RSP'):
-          print('[{}] Recv RSP in {} ms'.format(i, timer.read_ms()))
-          collected.append(recv)
-          break
+    data = 'ECHO_REQ{}'.format(cnt)
+    lora_ctl.send(data)
 
-    percent = len(collected) / TOTAL_SEND
-    print('Send: {}  Recv: {}  Percent: {:3d}%'.format(
-          TOTAL_SEND, len(collected), int(percent * 100)))
-    print('-------------------------------------------')
-    if percent >= 0.7:
+    # Collect response in 200ms
+    received = 0
+    timer = Timer.Chrono()
+    timer.start()
+    while timer.read_ms() < WAIT_RSP_MS:
+      recv = lora_ctl.recv()
+      if recv and recv.startswith('ECHO_RSP'):
+        print('[{}] Recv RSP in {} ms'.format(cnt, timer.read_ms()))
+        received = 1
+        break
+    cnt += 1
+
+    statistics = statistics[1:] + [received]
+
+    total_recv = sum(statistics)
+    percent = total_recv / RECV_WINDOW
+    print('Recv: {}  Percent: {:3d}%'.format(total_recv, int(percent * 100)))
+    print('---------------------------------------------')
+    if percent >= 0.8:
       flash(0x007f00)  # green
     elif percent >= 0.4:
-      flash(0x7f7f00)  # yellow
+      flash(0x3f1f00)  # yellow
     else:
       flash(0x7f0000)  # red
 
-    # Now become a responder in 10 secs.
-    while timer.read_ms() < 10000:
+    # Now become a responder until timeout.
+    timeout = randint(NEXT_TRY_MIN, NEXT_TRY_MAX)
+    print('In response mode until next timeout: {} ms'.format(timeout))
+    while timer.read_ms() < timeout:
       recv = lora_ctl.recv()
       if recv and recv.startswith('ECHO_REQ'):
         print('Got echo request: {}'.format(recv))

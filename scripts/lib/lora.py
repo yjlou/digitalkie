@@ -15,7 +15,7 @@ class LoRaController(object):
     self.lora_ = LoRa(mode=LoRa.LORA,
                       region=LoRa.US915,
                       power_mode=LoRa.ALWAYS_ON,
-                      tx_power=5,  # 5~20
+                      tx_power=20,  # 5~20
                       bandwidth=LoRa.BW_500KHZ)
 
     # create a raw LoRa socket
@@ -30,7 +30,8 @@ class LoRaController(object):
   def second(self, alarm):
     if not self.sent_in_second_:
       return
-    print('#packet sent: {}.'.format(self.sent_in_second_))
+    if self.debug_:
+      print('#packet sent: {}.'.format(self.sent_in_second_))
     self.sent_in_second_ = 0
 
   def send(self, data):
