@@ -16,7 +16,10 @@ class LoRaController(object):
                       region=LoRa.US915,
                       power_mode=LoRa.ALWAYS_ON,
                       tx_power=20,  # 5~20
-                      bandwidth=LoRa.BW_500KHZ)
+                      preamble=8,  # default: 8
+                      sf=7,  # 7~12. Higher ==> Longer
+                      coding_rate=LoRa.CODING_4_8,  # 4_8 is most stable.
+                      bandwidth=LoRa.BW_125KHZ)
 
     # create a raw LoRa socket
     self.sock_ = socket.socket(socket.AF_LORA, socket.SOCK_RAW)
